@@ -1,72 +1,124 @@
 const cheerio = require('cheerio');
 const selectors = require('./selectors');
 
-const getSummaryByTime = async (key,result,page,selector) => {
-    const el = await page.$(selector)
+const processHTML = async (content,page,R) => {
+    const $ = cheerio.load(content);
 
-    if(el){
-        await page.evaluate(element => element.click(), el);
-        content = await page.content();
-        const $ = cheerio.load(content);
+    const t = await page.evaluate((result) => {
+        console.log("Result value inside evaluate: ",{result});
 
-        result.summary[key].opening_price = $(selectors.opening_price).text()
-        result.summary[key].closing_price = $(selectors.closing_price).text()
-        result.summary[key].absolute_change = $(selectors.absolute_change).text()
-        result.summary[key].minimum_price = $(selectors.minimum_price).text()
-        result.summary[key].maximum_price = $(selectors.maximum_price).text()
-        result.summary[key].annualized_volatility = $(selectors.annualized_volatility).text()
-        result.price_change_percentage[key] = $(selectors.price_change_percentage).text()
-    }
-}
+        const processTDS = (tds,result) => {
+            let val = tds[1].textContent.trim();
+        
+            switch(tds[0].textContent){
+                case "Movement":
+                    if(!result.movement)
+                        result.movement = val;
+                    return;
+                case "Movement/Caliber":
+                    if(!result.caliber)
+                        result.caliber = val;
+                    return;
+                case "Power reserve":
+                    if(!result.power_reserve)
+                        result.power_reserve = val;
+                    return;
+                case "Number of jewels":
+                    if(!result.no_of_jewels)
+                        result.no_of_jewels = val;
+                    return;
+                case "Case material":
+                    if(!result.case_material)
+                        result.case_material = val;
+                    return;
+                case "Water resistance":
+                    if(!result.water_resistance)
+                        result.water_resistance = val;
+                    return;
+                case "Bezel material":
+                    if(!result.bezel_material)
+                        result.bezel_material = val;
+                    return;
+                case "Crystal":
+                    if(!result.crystal)
+                        result.crystal = val;
+                    return;
+                case "Dial numerals":
+                    if(!result.dial_numerals)
+                        result.dial_numerals = val;
+                    return;
+                case "Bracelet material":
+                    if(!result.bracelet_material)
+                        result.bracelet_material = val;
+                    return;
+                case "Bracelet color":
+                    if(!result.bracelet_color)
+                        result.bracelet_color = val;
+                    return;
+                case "Clasp":
+                    if(!result.clasp)
+                        result.clasp = val;
+                    return;
+                case "Clasp material":
+                    if(!result.clasp_material)
+                        result.clasp_material = val;
+                    return;
+            }
+        }
 
-const processHTML = async (content,page) => {
-    let $ = cheerio.load(content);
-    const result = {}
+        const table = document.querySelector('#detail-page-dealer > section.js-details-and-security-tabs.container.m-b-7.m-b-md-9 > div > div.js-tab.tab.active > section > div > div:nth-child(1) > table')
+
+        let tr;
+        if(table) {
+            tr = table.querySelectorAll('tr')
+
+            for(let x of tr) {
+                if(x) {
+                    let tds = x.querySelectorAll('td')
+                    if(tds && tds.length > 1){
+                        processTDS(tds,result);
+
+                        if(tds[0].textContent === "Case diameter"){
+                            if(!result.case_diameter)
+                                result.case_diameter = tds[1].querySelector('span').textContent
+                        }
+                        
+                        if(tds[0].textContent === "Price"){
+                            let price = tds[1].textContent.trim().match(/-?\d+(?:,\d{3})*(?:\.\d+)?/)
+                            if(price){
+                                price = "$"+price.join("")
+                                result.listed_price.push(price)
+                            }
+                        }else if(tds[0].textContent === "Dial"){
+                            const dial = tds[1].textContent.trim()
+                            if(dial && !result.dial.includes(dial))
+                                result.dial.push(dial)
+                        }else if(tds[0].textContent === "Year of production"){
+                            let yop = tds[1].textContent.trim().match(/\d/g)
+                            if(yop){
+                                yop = yop.join("")
+                                if(!result.year_of_production.includes(yop))
+                                    result.year_of_production.push(yop);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return result; 
+    },R)
     
-    // for getting brand name
-    result.brand = $(selectors.brand).text()
-
-    // for getting model name
-    let model = $(selectors.model).text()
-    console.log("Model: ",model);
-    model = model.replace(result.brand+" ","");
-    result.model = model;
-
-    result.reference_no = $(selectors.reference_no).text()
-    result.retail_price = $(selectors.retail_price).text()
-    result.current_price = $(selectors.current_price).text()
-    result.dial = $(selectors.dial).text()
-    result.material = $(selectors.material).text()
-    result.diameter = $(selectors.diameter).text()
-    result.complications = $(selectors.complications).text()
-    result.caliber = $(selectors.caliber).text()
-    result.movement = $(selectors.movement).text()
-    result.power_reserve = $(selectors.power_reserve).text()
-    result.crystal = $(selectors.crystal).text()
-    result.water_resistance = $(selectors.water_resistance).text()
-
-    // for summary
-    result.summary = {"3m": {},"6m": {},"1y": {},"3y": {},"5y": {},all: {}}
-    result.price_change_percentage = {"3m": "","6m": "","1y": "","3y": "","5y": "",all: ""}
-
-    await getSummaryByTime("3m",result,page,selectors.three_month)
-    await getSummaryByTime("6m",result,page,selectors.six_month)
-    await getSummaryByTime("1y",result, page,selectors.one_year)
-    await getSummaryByTime("3y",result,page,selectors.three_year)
-    await getSummaryByTime("5y",result,page,selectors.five_year)
-    await getSummaryByTime("all",result,page,selectors.all)
-
-    // for buy now links
-    result.buynow = []
-
-    $("#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(2) > div:nth-child(2) > div > div > div")
-    .each((_,val) => {
-        result.buynow.push($(val).find("a").attr("href"))
-    })
-
-    return result;
+    R = {...R,...t};
+    
+    if(!R.functions)
+        R.functions = $("#detail-page-dealer > section.js-details-and-security-tabs.container.m-b-7.m-b-md-9 > div > div.js-tab.tab.active > section > div > div:nth-child(1) > table > tbody:nth-child(5) > tr:nth-child(2) > td")
+                        .text().trim()
+    
+    console.log(R);
+    return R;
 }
 
 module.exports = {
-    processHTML,
+    processHTML
 }
