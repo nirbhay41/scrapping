@@ -1,4 +1,4 @@
-const cheerio = require('cheerio');
+const axios = require('axios');
 const selectors = require('./selectors');
 
 const getSummaryByTime = async (key,result,page,selector) => {
@@ -6,67 +6,61 @@ const getSummaryByTime = async (key,result,page,selector) => {
 
     if(el){
         await page.evaluate(element => element.click(), el);
-        content = await page.content();
-        const $ = cheerio.load(content);
 
-        result.summary[key].opening_price = $(selectors.opening_price).text()
-        result.summary[key].closing_price = $(selectors.closing_price).text()
-        result.summary[key].absolute_change = $(selectors.absolute_change).text()
-        result.summary[key].minimum_price = $(selectors.minimum_price).text()
-        result.summary[key].maximum_price = $(selectors.maximum_price).text()
-        result.summary[key].annualized_volatility = $(selectors.annualized_volatility).text()
-        result.price_change_percentage[key] = $(selectors.price_change_percentage).text()
+        result.summary[key].opening_price = await page.$eval(selectors.opening_price, el => el.textContent);
+        result.summary[key].closing_price = await page.$eval(selectors.closing_price, el => el.textContent);
+        result.summary[key].absolute_change = await page.$eval(selectors.absolute_change, el => el.textContent);
+        result.summary[key].minimum_price = await page.$eval(selectors.minimum_price, el => el.textContent);
+        result.summary[key].maximum_price = await page.$eval(selectors.maximum_price, el => el.textContent)
+        result.summary[key].annualized_volatility = await page.$eval(selectors.annualized_volatility, el => el.textContent)
+        result.price_change_percentage[key] = await page.$eval(selectors.price_change_percentage, el => el.textContent)
     }
 }
 
-const processHTML = async (content,page) => {
-    let $ = cheerio.load(content);
-    const result = {}
-    
-    // for getting brand name
-    result.brand = $(selectors.brand).text()
+const parse = async (watchPage,scrappedData) => {
+    const watchPageUrl = watchPage.url();    
+    const watchName = watchPageUrl.substring(watchPageUrl.lastIndexOf('/')+1)
 
-    // for getting model name
-    let model = $(selectors.model).text()
-    console.log("Model: ",model);
-    model = model.replace(result.brand+" ","");
-    result.model = model;
+    const fetchUrl = `https://api.watchanalytics.io/v1/products/${watchName}`
+    const watchData = (await axios.get(fetchUrl)).data;
 
-    result.reference_no = $(selectors.reference_no).text()
-    result.retail_price = $(selectors.retail_price).text()
-    result.current_price = $(selectors.current_price).text()
-    result.dial = $(selectors.dial).text()
-    result.material = $(selectors.material).text()
-    result.diameter = $(selectors.diameter).text()
-    result.complications = $(selectors.complications).text()
-    result.caliber = $(selectors.caliber).text()
-    result.movement = $(selectors.movement).text()
-    result.power_reserve = $(selectors.power_reserve).text()
-    result.crystal = $(selectors.crystal).text()
-    result.water_resistance = $(selectors.water_resistance).text()
+    const result = {};
 
-    // for summary
+    result.brand = watchData.details.Brand;
+    result.model = watchData.name;
+    result.reference_no = watchData.ref;
+    result.retail_price = watchData.details["Retail price"];
+    result.dial = watchData.details.Dial;
+    result.material = watchData.details.Material;
+    result.diameter = watchData.details.Diameter;
+    result.complications = watchData.details.Complications;
+    result.caliber = watchData.details.Caliber;
+    result.movement = watchData.details.Movement;
+    result.power_reserve = watchData.details["Power reserve"];
+    result.crystal = watchData.details.Crystal;
+    result.water_resistance = watchData.details["Water resistance"];
+    result.current_price = await watchPage.$eval(selectors.current_price, el => el.textContent);
+
     result.summary = {"3m": {},"6m": {},"1y": {},"3y": {},"5y": {},all: {}}
     result.price_change_percentage = {"3m": "","6m": "","1y": "","3y": "","5y": "",all: ""}
 
-    await getSummaryByTime("3m",result,page,selectors.three_month)
-    await getSummaryByTime("6m",result,page,selectors.six_month)
-    await getSummaryByTime("1y",result, page,selectors.one_year)
-    await getSummaryByTime("3y",result,page,selectors.three_year)
-    await getSummaryByTime("5y",result,page,selectors.five_year)
-    await getSummaryByTime("all",result,page,selectors.all)
+    await getSummaryByTime("3m",result,watchPage,selectors.three_month)
+    await getSummaryByTime("6m",result,watchPage,selectors.six_month)
+    await getSummaryByTime("1y",result, watchPage,selectors.one_year)
+    await getSummaryByTime("3y",result,watchPage,selectors.three_year)
+    await getSummaryByTime("5y",result,watchPage,selectors.five_year)
+    await getSummaryByTime("all",result,watchPage,selectors.all)
 
-    // for buy now links
-    result.buynow = []
+    const buynow = [];
 
-    $("#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(2) > div:nth-child(2) > div > div > div")
-    .each((_,val) => {
-        result.buynow.push($(val).find("a").attr("href"))
-    })
+    for(let e of watchData.buy_now){
+        buynow.push(e.url);
+    }
 
-    return result;
+    result.buynow = buynow;
+    result.prices = watchData.prices;
+
+    scrappedData.push(result);
 }
 
-module.exports = {
-    processHTML,
-}
+module.exports = parse;

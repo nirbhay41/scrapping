@@ -1,18 +1,5 @@
 const selectors = {
-    brand: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(1) > div > div > table > tbody > tr:nth-child(1) > td.entry-detail",
-    model: "#root > div > div:nth-child(3) > div > div:nth-child(1) > div > div > div > div.col-sm-7.ps-sm-5.animation-element.bounce-down.charthelpmobile.headermobilebiewtwo.in-view > div > div.desktop.d-flex.flex-column > h2:nth-child(2)",
-    reference_no: "#root > div > div:nth-child(3) > div > div:nth-child(1) > div > div > div > div.col-sm-7.ps-sm-5.animation-element.bounce-down.charthelpmobile.headermobilebiewtwo.in-view > div > div.desktop.d-flex.flex-column > h2:nth-child(3)",
-    retail_price: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(1) > div > div > table > tbody > tr:nth-child(2) > td.entry-detail",
     current_price: "#root > div > div:nth-child(3) > div > div:nth-child(1) > div > div > div > div.col-sm-7.ps-sm-5.animation-element.bounce-down.charthelpmobile.headermobilebiewtwo.in-view > div > div.desktop.d-flex.flex-column > div.d-flex.align-items-center.my-1 > h3",
-    dial: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(1) > div > div > table > tbody > tr:nth-child(3) > td.entry-detail",
-    material: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(1) > div > div > table > tbody > tr:nth-child(4) > td.entry-detail",
-    diameter: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(1) > div > div > table > tbody > tr:nth-child(5) > td.entry-detail",
-    complications: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(1) > div > div > table > tbody > tr:nth-child(6) > td.entry-detail",
-    caliber: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(1) > div > div > table > tbody > tr:nth-child(7) > td.entry-detail",
-    movement: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(1) > div > div > table > tbody > tr:nth-child(8) > td.entry-detail",
-    power_reserve: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(1) > div > div > table > tbody > tr:nth-child(9) > td.entry-detail",
-    crystal: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(1) > div > div > table > tbody > tr:nth-child(10) > td.entry-detail",
-    water_resistance: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(1) > div > div > table > tbody > tr:nth-child(11) > td.entry-detail",
     opening_price: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(2) > div:nth-child(1) > div > div:nth-child(2) > div > div:nth-child(1) > h3",
     closing_price: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(2) > div:nth-child(1) > div > div:nth-child(2) > div > div:nth-child(2) > h3",
     absolute_change: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(2) > div:nth-child(1) > div > div:nth-child(2) > div > div:nth-child(3) > h3",
@@ -26,6 +13,7 @@ const selectors = {
     six_month: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(2) > div:nth-child(1) > div > div.summarsectiontimframes > div > button:nth-child(5)",
     three_month: "#root > div > div:nth-child(3) > div > div.row.row-attributes.details-section.my-5 > div > div.detailsdesktop > div:nth-child(2) > div:nth-child(1) > div > div.summarsectiontimframes > div > button:nth-child(6)",
     price_change_percentage: "#root > div > div:nth-child(3) > div > div:nth-child(1) > div > div > div > div.col-sm-7.ps-sm-5.animation-element.bounce-down.charthelpmobile.headermobilebiewtwo.in-view > div > div.desktop.d-flex.flex-column > div.d-flex.align-items-center.my-1 > div > div > div.chartchangepercent",
+    searchResultCount: "#root > div > div.row.row-attributes.search-result-section.my-5.footerbottom > div > div.row.row-attributes > div > div:nth-child(1) > div > p > font:nth-child(2)",
     
 }
 
